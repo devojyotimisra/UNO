@@ -1,3 +1,4 @@
+import { useEffect } from "react";
 import { useGame } from "../context/GameContext";
 import { currentColorCSS } from "../utils/cardHelpers";
 import socket from "../socket";
@@ -10,14 +11,44 @@ import CardPlayedAnimation from "../components/CardPlayedAnimation";
 import Loader from "../components/Loader";
 import "./GameScreen.css";
 
+function YourTurnIndicator() {
+  const { state, dispatch } = useGame();
+  if (!state.showYourTurn) return null;
+
+  return (
+    <div
+      className="your-turn-flash"
+      key={Date.now()}
+      onAnimationEnd={() => dispatch({ type: "CLEAR_YOUR_TURN" })}
+    >
+      <span className="your-turn-text">🎯 Your Turn!</span>
+    </div>
+  );
+}
+
+function DrewCardIndicator() {
+  const { state, dispatch } = useGame();
+  if (!state.drewCard) return null;
+
+  return (
+    <div
+      className="drew-card-flash"
+      key={Date.now()}
+      onAnimationEnd={() => dispatch({ type: "CLEAR_DREW_CARD" })}
+    >
+      <div className="drew-card-icon">🃏</div>
+      <span className="drew-card-text">+1 Card</span>
+    </div>
+  );
+}
+
 export default function GameScreen() {
   const { state } = useGame();
-  const { gameState, myId, lastFine } = state;
+  const { gameState, myId } = state;
 
   if (!gameState) return <Loader fullscreen text="Loading game…" />;
 
   const isMyTurn = gameState.currentPlayer === myId;
-  const myPlayer = gameState.players.find((p) => p.id === myId);
 
   const handleDraw = () => {
     if (!isMyTurn) return;
@@ -91,6 +122,8 @@ export default function GameScreen() {
       </div>
 
       <Hand />
+      <YourTurnIndicator />
+      <DrewCardIndicator />
       <CardPlayedAnimation />
       <ColorPicker />
       <GameOverOverlay />

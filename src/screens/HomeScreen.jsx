@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect, useRef } from "react";
 import { useGame } from "../context/GameContext";
 import socket from "../socket";
 import Loader from "../components/Loader";
@@ -11,6 +11,7 @@ const CARD_COLORS = [
   "var(--card-yellow)",
 ];
 const PROFILE_KEY = "uno_profile";
+const LOADING_TIMEOUT_MS = 8000;
 
 function getSavedName() {
   try {
@@ -27,17 +28,30 @@ function saveName(name) {
 }
 
 export default function HomeScreen() {
-  const { state, dispatch } = useGame();
+  const { state, dispatch, addToast } = useGame();
   const [name, setName] = useState(getSavedName);
   const [roomCode, setRoomCode] = useState("");
+  const loadingTimerRef = useRef(null);
 
   const isConnected = state.connected;
   const isLoading = state.loading === "creating" || state.loading === "joining";
-  const canCreate = name.trim().length >= 1 && isConnected && !isLoading;
+
+  useEffect(() => {
+    if (isLoading) {
+      loadingTimerRef.current = setTimeout(() => {
+        dispatch({ type: "SET_LOADING", payload: null });
+        addToast("Request timed out. Please try again.", "error", 2000);
+      }, LOADING_TIMEOUT_MS);
+    }
+    return () => {
+      if (loadingTimerRef.current) clearTimeout(loadingTimerRef.current);
+    };
+  }, [isLoading, dispatch, addToast]);
+
+  const canCreate = name.trim().length >= 1 && !isLoading;
   const canJoin =
     name.trim().length >= 1 &&
     roomCode.trim().length >= 4 &&
-    isConnected &&
     !isLoading;
 
   const floatingCards = useMemo(
@@ -68,6 +82,10 @@ export default function HomeScreen() {
   );
 
   const handleCreate = () => {
+    if (!isConnected) {
+      addToast("Connecting… please wait", "info", 1500);
+      return;
+    }
     const saved = saveName(name);
     if (!saved) return;
     dispatch({ type: "SET_LOADING", payload: "creating" });
@@ -75,6 +93,10 @@ export default function HomeScreen() {
   };
 
   const handleJoin = () => {
+    if (!isConnected) {
+      addToast("Connecting… please wait", "info", 1500);
+      return;
+    }
     const saved = saveName(name);
     const code = roomCode.trim().toUpperCase();
     if (!saved || !code) return;

@@ -26,6 +26,9 @@ const initialState = {
   toasts: [],
   lastFine: null,
   lastPlayedCard: null,
+  drewCard: false,
+  showYourTurn: false,
+  prevTurnPlayer: null,
 };
 
 function reducer(state, action) {
@@ -66,17 +69,25 @@ function reducer(state, action) {
         gameOver: null,
         lastFine: null,
         lastPlayedCard: null,
+        drewCard: false,
+        showYourTurn: false,
+        prevTurnPlayer: null,
       };
 
-    case "GAME_STATE":
+    case "GAME_STATE": {
+      const newCurrent = action.payload.currentPlayer;
+      const wasMyTurn = state.prevTurnPlayer === state.myId;
+      const isNowMyTurn = newCurrent === state.myId;
+      const justBecameMyTurn = isNowMyTurn && !wasMyTurn && state.prevTurnPlayer !== null;
       return {
         ...state,
         gameState: action.payload,
         selectedCardId:
-          action.payload.currentPlayer !== state.myId
-            ? null
-            : state.selectedCardId,
+          newCurrent !== state.myId ? null : state.selectedCardId,
+        prevTurnPlayer: newCurrent,
+        showYourTurn: justBecameMyTurn ? true : state.showYourTurn,
       };
+    }
 
     case "HAND_UPDATED":
       return {
@@ -84,6 +95,18 @@ function reducer(state, action) {
         hand: action.payload.hand,
         selectedCardId: null,
       };
+
+    case "DREW_CARD":
+      return { ...state, drewCard: true };
+
+    case "CLEAR_DREW_CARD":
+      return { ...state, drewCard: false };
+
+    case "SHOW_YOUR_TURN":
+      return { ...state, showYourTurn: true };
+
+    case "CLEAR_YOUR_TURN":
+      return { ...state, showYourTurn: false };
 
     case "SELECT_CARD":
       return { ...state, selectedCardId: action.payload };
@@ -120,7 +143,7 @@ function reducer(state, action) {
       return { ...state, lastFine: null };
 
     case "PLAYER_LEFT":
-      return state; // handled by toasts
+      return state;
 
     case "ADD_TOAST": {
       const toast = { id: Date.now() + Math.random(), ...action.payload };
@@ -151,6 +174,10 @@ function reducer(state, action) {
         unoWindow: null,
         gameOver: null,
         lastFine: null,
+        lastPlayedCard: null,
+        drewCard: false,
+        showYourTurn: false,
+        prevTurnPlayer: null,
         screen: "room",
         loading: null,
       };
@@ -165,7 +192,7 @@ export function GameProvider({ children }) {
   const stateRef = useRef(state);
   stateRef.current = state;
 
-  const addToast = useCallback((message, type = "info", duration = 3000) => {
+  const addToast = useCallback((message, type = "info", duration = 2000) => {
     dispatch({ type: "ADD_TOAST", payload: { message, type, duration } });
   }, []);
 
@@ -173,21 +200,25 @@ export function GameProvider({ children }) {
     function onConnect() {
       dispatch({ type: "SET_CONNECTED", payload: true });
       const s = stateRef.current;
+      if (s.loading) {
+        dispatch({ type: "SET_LOADING", payload: null });
+      }
       if (s.screen !== "home" && s.room) {
-        // Attempt to rejoin after a reconnect (mobile background, etc.)
         const myPlayer = s.room.players?.find((p) => p.id === s.myId);
         const myName = myPlayer?.name || "Player";
         socket.emit("rejoin_room", {
           roomCode: s.room.roomCode,
           name: myName,
         });
-        addToast("Reconnected!", "success", 2000);
+        addToast("Reconnected!", "success", 1500);
       }
     }
 
     function onDisconnect() {
       dispatch({ type: "SET_CONNECTED", payload: false });
-      addToast("Connection lost. Reconnecting…", "error", 5000);
+      if (stateRef.current.screen !== "home") {
+        addToast("Connection lost. Reconnecting…", "error", 2500);
+      }
     }
 
     function onRoomCreated(data) {
@@ -213,27 +244,27 @@ export function GameProvider({ children }) {
     function onHandUpdated(data) {
       dispatch({ type: "HAND_UPDATED", payload: data });
       if (data.drawnCard) {
-        addToast("You drew a card", "info", 1800);
+        dispatch({ type: "DREW_CARD" });
+        setTimeout(() => dispatch({ type: "CLEAR_DREW_CARD" }), 1200);
       }
     }
 
     function onCardEffect(data) {
       const labels = {
-        skip: "Skipped!",
-        reverse: "Direction reversed!",
-        draw2: "+2 cards!",
-        wild: "Color changed!",
-        wild_draw4: "+4 cards!",
+        skip: "⛔ Skipped!",
+        reverse: "🔄 Reversed!",
+        draw2: "💥 +2 cards!",
+        wild: "🎨 Color changed!",
+        wild_draw4: "💥 +4 cards!",
       };
       if (data.effect && labels[data.effect]) {
-        addToast(labels[data.effect], "info", 2500);
+        addToast(labels[data.effect], "info", 1800);
       }
     }
 
     function onCardPlayed(data) {
       dispatch({ type: "CARD_PLAYED", payload: data });
-      // Auto-clear after animation duration
-      setTimeout(() => dispatch({ type: "CLEAR_PLAYED_CARD" }), 1600);
+      setTimeout(() => dispatch({ type: "CLEAR_PLAYED_CARD" }), 1400);
     }
 
     function onPlayerFined(data) {
@@ -241,13 +272,12 @@ export function GameProvider({ children }) {
       const isMe = data.playerId === stateRef.current.myId;
       addToast(
         isMe
-          ? `Invalid play! You were fined +${data.fineCount} cards`
-          : `${data.playerName} was fined +${data.fineCount} cards!`,
+          ? `Invalid play! +${data.fineCount} cards`
+          : `${data.playerName} fined +${data.fineCount}!`,
         isMe ? "error" : "warning",
-        3500,
+        2500,
       );
-      // Clear fine indicator after animation
-      setTimeout(() => dispatch({ type: "CLEAR_FINE" }), 3000);
+      setTimeout(() => dispatch({ type: "CLEAR_FINE" }), 2500);
     }
 
     function onUnoWindowOpen(data) {
@@ -257,7 +287,7 @@ export function GameProvider({ children }) {
     function onUnoSafe(data) {
       dispatch({ type: "UNO_WINDOW_CLOSE" });
       const isMe = data.playerId === stateRef.current.myId;
-      addToast(isMe ? "UNO called!" : "UNO was called safely", "success", 2000);
+      addToast(isMe ? "UNO called! 🎉" : "UNO called safely", "success", 1500);
     }
 
     function onUnoPenalty(data) {
@@ -265,10 +295,10 @@ export function GameProvider({ children }) {
       const isMe = data.playerId === stateRef.current.myId;
       addToast(
         isMe
-          ? `Caught by ${data.caughtByName}! +2 cards`
-          : `${data.playerName} caught! +2 penalty`,
+          ? `Caught by ${data.caughtByName}! +2`
+          : `${data.playerName} caught! +2`,
         isMe ? "error" : "success",
-        3000,
+        2000,
       );
     }
 
@@ -277,12 +307,20 @@ export function GameProvider({ children }) {
     }
 
     function onPlayerLeft(data) {
-      addToast(`${data.name} left the game`, "info", 3000);
+      if (data.playerId !== stateRef.current.myId) {
+        addToast(`${data.name} left`, "info", 1500);
+      }
+    }
+
+    function onPlayerDrew(data) {
+      if (data.playerId !== stateRef.current.myId) {
+        addToast(`${data.playerName} drew a card`, "info", 1500);
+      }
     }
 
     function onError(data) {
       dispatch({ type: "SET_LOADING", payload: null });
-      addToast(data.message || "Something went wrong", "error", 3500);
+      addToast(data.message || "Something went wrong", "error", 2500);
     }
 
     socket.on("connect", onConnect);
@@ -301,6 +339,7 @@ export function GameProvider({ children }) {
     socket.on("uno_penalty", onUnoPenalty);
     socket.on("game_over", onGameOver);
     socket.on("player_left", onPlayerLeft);
+    socket.on("player_drew", onPlayerDrew);
     socket.on("error", onError);
 
     if (socket.connected) {
@@ -324,6 +363,7 @@ export function GameProvider({ children }) {
       socket.off("uno_penalty", onUnoPenalty);
       socket.off("game_over", onGameOver);
       socket.off("player_left", onPlayerLeft);
+      socket.off("player_drew", onPlayerDrew);
       socket.off("error", onError);
     };
   }, [addToast]);

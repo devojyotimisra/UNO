@@ -1,36 +1,29 @@
-import { useEffect, useMemo } from "react";
+import { useMemo } from "react";
 import { useGame } from "../context/GameContext";
 import socket from "../socket";
 import "./Overlays.css";
 
 const CONFETTI_COLORS = [
-  "#e63946",
-  "#f4c542",
-  "#2a9d8f",
-  "#4895ef",
-  "#c77dff",
-  "#ff9f1c",
-  "#e94560",
-  "#2ec4b6",
+  "#e63946", "#f4c542", "#2a9d8f", "#4895ef",
+  "#c77dff", "#ff9f1c", "#e94560", "#2ec4b6",
+  "#ff6b6b", "#51cf66", "#ffd43b", "#748ffc",
 ];
 const CONFETTI_SHAPES = ["circle", "square", "strip"];
 
-function Confetti() {
+function Confetti({ count = 60 }) {
   const pieces = useMemo(() => {
-    return Array.from({ length: 80 }, (_, i) => ({
+    return Array.from({ length: count }, (_, i) => ({
       id: i,
       left: Math.random() * 100,
-      delay: Math.random() * 3,
-      duration: 2.5 + Math.random() * 3,
-      color:
-        CONFETTI_COLORS[Math.floor(Math.random() * CONFETTI_COLORS.length)],
+      delay: Math.random() * 2.5,
+      duration: 2 + Math.random() * 2.5,
+      color: CONFETTI_COLORS[Math.floor(Math.random() * CONFETTI_COLORS.length)],
       rotation: Math.random() * 360,
       size: 6 + Math.random() * 10,
-      shape:
-        CONFETTI_SHAPES[Math.floor(Math.random() * CONFETTI_SHAPES.length)],
+      shape: CONFETTI_SHAPES[Math.floor(Math.random() * CONFETTI_SHAPES.length)],
       drift: (Math.random() - 0.5) * 200,
     }));
-  }, []);
+  }, [count]);
 
   return (
     <div className="confetti-container">
@@ -49,6 +42,23 @@ function Confetti() {
         };
         return <div key={p.id} className="confetti-piece" style={shapeStyle} />;
       })}
+    </div>
+  );
+}
+
+function Starburst() {
+  return (
+    <div className="starburst-container">
+      {Array.from({ length: 12 }, (_, i) => (
+        <div
+          key={i}
+          className="starburst-ray"
+          style={{
+            transform: `rotate(${i * 30}deg)`,
+            animationDelay: `${i * 0.05}s`,
+          }}
+        />
+      ))}
     </div>
   );
 }
@@ -72,9 +82,10 @@ export function GameOverOverlay() {
 
   return (
     <>
-      {isWinner && <Confetti />}
+      <Confetti count={isWinner ? 80 : 30} />
+      {isWinner && <Starburst />}
       <div className="overlay" role="dialog" aria-label="Game over">
-        <div className="overlay-sheet gameover-sheet">
+        <div className={`overlay-sheet gameover-sheet ${isWinner ? "winner-sheet" : "loser-sheet"}`}>
           <div className="gameover-trophy">{isWinner ? "🏆" : "😔"}</div>
           <div className="gameover-winner">
             {isWinner ? "🎉 You Won!" : `${gameOver.winner.name} Wins!`}

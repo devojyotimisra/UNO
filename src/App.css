@@ -199,7 +199,6 @@ body {
   border: 0;
 }
 
-/* Respect OS-level reduced motion preference */
 @media (prefers-reduced-motion: reduce) {
   *,
   *::before,
@@ -210,7 +209,6 @@ body {
   }
 }
 
-/* Mobile touch optimizations */
 @media (max-width: 768px) {
   .btn {
     -webkit-tap-highlight-color: transparent;
