@@ -1,4 +1,3 @@
-import { useEffect } from "react";
 import { useGame } from "../context/GameContext";
 import { currentColorCSS } from "../utils/cardHelpers";
 import socket from "../socket";
@@ -17,11 +16,15 @@ function YourTurnIndicator() {
 
   return (
     <div
-      className="your-turn-flash"
+      className="your-turn-overlay"
       key={Date.now()}
       onAnimationEnd={() => dispatch({ type: "CLEAR_YOUR_TURN" })}
     >
-      <span className="your-turn-text">🎯 Your Turn!</span>
+      <div className="your-turn-content">
+        <div className="your-turn-line" />
+        <span className="your-turn-text">YOUR TURN</span>
+        <div className="your-turn-line" />
+      </div>
     </div>
   );
 }
@@ -36,8 +39,8 @@ function DrewCardIndicator() {
       key={Date.now()}
       onAnimationEnd={() => dispatch({ type: "CLEAR_DREW_CARD" })}
     >
-      <div className="drew-card-icon">🃏</div>
-      <span className="drew-card-text">+1 Card</span>
+      <div className="drew-card-icon">+1</div>
+      <span className="drew-card-text">Card drawn</span>
     </div>
   );
 }
@@ -46,12 +49,14 @@ export default function GameScreen() {
   const { state } = useGame();
   const { gameState, myId } = state;
 
-  if (!gameState) return <Loader fullscreen text="Loading game…" />;
+  if (!gameState) return <Loader fullscreen text="Loading game..." />;
 
   const isMyTurn = gameState.currentPlayer === myId;
+  const hasDrawn = gameState.hasDrawn || false;
+  const drawStack = gameState.drawStack || 0;
 
   const handleDraw = () => {
-    if (!isMyTurn) return;
+    if (!isMyTurn || hasDrawn) return;
     socket.emit("draw_card");
   };
 
@@ -70,9 +75,14 @@ export default function GameScreen() {
           <span className="current-color-label">{currentColor}</span>
         </div>
 
-        <span className={`turn-text ${isMyTurn ? "highlight" : ""}`}>
-          {isMyTurn ? "🎯 Your Turn!" : `${gameState.currentPlayerName}'s turn`}
-        </span>
+        <div className="turn-center">
+          <span className={`turn-text ${isMyTurn ? "highlight" : ""}`}>
+            {isMyTurn ? "Your Turn!" : `${gameState.currentPlayerName}'s turn`}
+          </span>
+          {drawStack > 0 && (
+            <span className="stack-badge">+{drawStack} stacked</span>
+          )}
+        </div>
 
         <div className="turn-right">
           <span
@@ -93,7 +103,7 @@ export default function GameScreen() {
           <DrawPileCard
             count={gameState.drawPileCount}
             onClick={handleDraw}
-            disabled={!isMyTurn}
+            disabled={!isMyTurn || hasDrawn}
           />
           <div className="pile-info">
             <span className="pile-label">Draw</span>

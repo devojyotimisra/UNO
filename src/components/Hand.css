@@ -120,6 +120,58 @@
   cursor: not-allowed;
 }
 
+.hand-card-wrapper.disabled-card {
+  opacity: 0.55;
+  pointer-events: none;
+}
+
+.btn-pass {
+  background: linear-gradient(135deg, #ff9f1c, #e88a00);
+  color: #1a1a2e;
+  font-weight: 700;
+  border: none;
+  cursor: pointer;
+  padding: 12px 20px;
+  border-radius: 14px;
+  font-family: var(--font);
+  font-size: 0.9rem;
+  transition: all 0.2s ease;
+}
+
+.btn-pass:hover:not(:disabled) {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 16px rgba(255, 159, 28, 0.3);
+}
+
+.btn-pass:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.btn-draw-stack {
+  background: linear-gradient(135deg, var(--card-red), #cc0000);
+  color: #fff;
+  font-weight: 800;
+  border: none;
+  cursor: pointer;
+  padding: 12px 20px;
+  border-radius: 14px;
+  font-family: var(--font);
+  font-size: 0.9rem;
+  animation: drawStackPulse 1s ease-in-out infinite alternate;
+}
+
+@keyframes drawStackPulse {
+  from { box-shadow: 0 4px 12px rgba(233, 69, 96, 0.3); }
+  to { box-shadow: 0 6px 24px rgba(233, 69, 96, 0.5); }
+}
+
+.btn-draw-stack:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+  animation: none;
+}
+
 @media (max-width: 480px) {
   .hand-card-wrapper {
     margin-left: -18px;
@@ -135,6 +187,12 @@
     min-width: 180px;
     font-size: 0.85rem;
     padding: 12px 20px;
+  }
+
+  .btn-pass,
+  .btn-draw-stack {
+    padding: 10px 16px;
+    font-size: 0.82rem;
   }
 }
 

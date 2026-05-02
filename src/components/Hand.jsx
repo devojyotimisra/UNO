@@ -5,9 +5,11 @@ import socket from "../socket";
 import "./Hand.css";
 
 export default function Hand() {
-  const { state, dispatch } = useGame();
+  const { state, dispatch, addToast } = useGame();
   const { hand, selectedCardId, gameState, myId } = state;
   const isMyTurn = gameState?.currentPlayer === myId;
+  const hasDrawn = gameState?.hasDrawn || false;
+  const drawStack = gameState?.drawStack || 0;
 
   const handleCardClick = (card) => {
     if (!isMyTurn) return;
@@ -28,6 +30,17 @@ export default function Hand() {
       socket.emit("play_card", { cardId: selectedCard.id });
       dispatch({ type: "SELECT_CARD", payload: null });
     }
+  };
+
+  const handleDraw = () => {
+    if (!isMyTurn) return;
+    socket.emit("draw_card");
+  };
+
+  const handlePass = () => {
+    if (!isMyTurn || !hasDrawn) return;
+    addToast("You passed", "info", 1200);
+    socket.emit("pass_turn");
   };
 
   const totalCards = hand.length;
@@ -52,7 +65,7 @@ export default function Hand() {
 
             return (
               <div
-                className={`hand-card-wrapper ${selectedCardId === card.id ? "selected-wrapper" : ""}`}
+                className={`hand-card-wrapper ${selectedCardId === card.id ? "selected-wrapper" : ""} ${!isMyTurn ? "disabled-card" : ""}`}
                 key={card.id}
                 style={{
                   "--card-angle": `${angle}deg`,
@@ -78,8 +91,29 @@ export default function Hand() {
           className="btn btn-secondary"
           onClick={() => socket.emit("call_uno")}
         >
-          🃏 UNO!
+          UNO!
         </button>
+
+        {hasDrawn ? (
+          <button
+            className="btn btn-pass"
+            onClick={handlePass}
+            disabled={!isMyTurn}
+          >
+            Pass
+          </button>
+        ) : (
+          drawStack > 0 && isMyTurn ? (
+            <button
+              className="btn btn-draw-stack"
+              onClick={handleDraw}
+              disabled={!isMyTurn}
+            >
+              Draw {drawStack}
+            </button>
+          ) : null
+        )}
+
         <button
           className="btn play-btn btn-primary"
           disabled={!isMyTurn || !selectedCard}
@@ -87,7 +121,7 @@ export default function Hand() {
         >
           {!selectedCard
             ? "Select a card"
-            : `▶ Play ${cardDisplayName(selectedCard)}`}
+            : `Play ${cardDisplayName(selectedCard)}`}
         </button>
       </div>
     </div>

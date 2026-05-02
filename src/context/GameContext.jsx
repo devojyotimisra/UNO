@@ -187,6 +187,13 @@ function reducer(state, action) {
   }
 }
 
+const COLOR_LABELS = {
+  red: "Red",
+  green: "Green",
+  blue: "Blue",
+  yellow: "Yellow",
+};
+
 export function GameProvider({ children }) {
   const [state, dispatch] = useReducer(reducer, initialState);
   const stateRef = useRef(state);
@@ -217,7 +224,7 @@ export function GameProvider({ children }) {
     function onDisconnect() {
       dispatch({ type: "SET_CONNECTED", payload: false });
       if (stateRef.current.screen !== "home") {
-        addToast("Connection lost. Reconnecting…", "error", 2500);
+        addToast("Connection lost. Reconnecting...", "error", 2500);
       }
     }
 
@@ -244,18 +251,20 @@ export function GameProvider({ children }) {
     function onHandUpdated(data) {
       dispatch({ type: "HAND_UPDATED", payload: data });
       if (data.drawnCard) {
+        const count = data.drawnCount || 1;
         dispatch({ type: "DREW_CARD" });
         setTimeout(() => dispatch({ type: "CLEAR_DREW_CARD" }), 1200);
       }
     }
 
     function onCardEffect(data) {
+      const colorLabel = COLOR_LABELS[data.color] || data.color;
       const labels = {
-        skip: "⛔ Skipped!",
-        reverse: "🔄 Reversed!",
-        draw2: "💥 +2 cards!",
-        wild: "🎨 Color changed!",
-        wild_draw4: "💥 +4 cards!",
+        skip: "Skipped!",
+        reverse: "Reversed!",
+        draw2: data.stackCount > 0 ? `+2 stacked! (${data.stackCount} total)` : "+2 cards!",
+        wild: `Color changed to ${colorLabel}`,
+        wild_draw4: data.stackCount > 0 ? `+4 stacked! (${data.stackCount} total)` : `+4 cards! Color: ${colorLabel}`,
       };
       if (data.effect && labels[data.effect]) {
         addToast(labels[data.effect], "info", 1800);
@@ -280,6 +289,24 @@ export function GameProvider({ children }) {
       setTimeout(() => dispatch({ type: "CLEAR_FINE" }), 2500);
     }
 
+    function onStackResolved(data) {
+      const isMe = data.playerId === stateRef.current.myId;
+      addToast(
+        isMe
+          ? `You drew ${data.count} stacked cards!`
+          : `${data.playerName} drew ${data.count} stacked cards!`,
+        isMe ? "warning" : "info",
+        2000,
+      );
+    }
+
+    function onPlayerPassed(data) {
+      const isMe = data.playerId === stateRef.current.myId;
+      if (!isMe) {
+        addToast(`${data.playerName} passed`, "info", 1500);
+      }
+    }
+
     function onUnoWindowOpen(data) {
       dispatch({ type: "UNO_WINDOW_OPEN", payload: data });
     }
@@ -287,7 +314,7 @@ export function GameProvider({ children }) {
     function onUnoSafe(data) {
       dispatch({ type: "UNO_WINDOW_CLOSE" });
       const isMe = data.playerId === stateRef.current.myId;
-      addToast(isMe ? "UNO called! 🎉" : "UNO called safely", "success", 1500);
+      addToast(isMe ? "UNO called!" : "UNO called safely", "success", 1500);
     }
 
     function onUnoPenalty(data) {
@@ -334,6 +361,8 @@ export function GameProvider({ children }) {
     socket.on("card_effect", onCardEffect);
     socket.on("card_played", onCardPlayed);
     socket.on("player_fined", onPlayerFined);
+    socket.on("stack_resolved", onStackResolved);
+    socket.on("player_passed", onPlayerPassed);
     socket.on("uno_window_open", onUnoWindowOpen);
     socket.on("uno_safe", onUnoSafe);
     socket.on("uno_penalty", onUnoPenalty);
@@ -358,6 +387,8 @@ export function GameProvider({ children }) {
       socket.off("card_effect", onCardEffect);
       socket.off("card_played", onCardPlayed);
       socket.off("player_fined", onPlayerFined);
+      socket.off("stack_resolved", onStackResolved);
+      socket.off("player_passed", onPlayerPassed);
       socket.off("uno_window_open", onUnoWindowOpen);
       socket.off("uno_safe", onUnoSafe);
       socket.off("uno_penalty", onUnoPenalty);
