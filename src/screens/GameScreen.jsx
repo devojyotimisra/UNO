@@ -12,17 +12,14 @@ import Loader from "../components/Loader";
 import "./GameScreen.css";
 
 function YourTurnIndicator() {
-  const { state, dispatch } = useGame();
+  const { dispatch } = useGame();
 
   useEffect(() => {
-    if (!state.showYourTurn) return;
     const timer = setTimeout(() => {
-      dispatch({ type: "CLEAR_YOUR_TURN" });
+      dispatch({ type: "CLEAR_ANIMATION" });
     }, 1600);
     return () => clearTimeout(timer);
-  }, [state.showYourTurn, dispatch]);
-
-  if (!state.showYourTurn) return null;
+  }, [dispatch]);
 
   return (
     <div className="your-turn-overlay">
@@ -35,25 +32,41 @@ function YourTurnIndicator() {
   );
 }
 
-function DrewCardIndicator() {
-  const { state, dispatch } = useGame();
+function DrewCardIndicator({ count }) {
+  const { dispatch } = useGame();
 
   useEffect(() => {
-    if (!state.drewCard) return;
     const timer = setTimeout(() => {
-      dispatch({ type: "CLEAR_DREW_CARD" });
+      dispatch({ type: "CLEAR_ANIMATION" });
     }, 1200);
     return () => clearTimeout(timer);
-  }, [state.drewCard, dispatch]);
-
-  if (!state.drewCard) return null;
+  }, [dispatch]);
 
   return (
     <div className="drew-card-flash">
-      <div className="drew-card-icon">+1</div>
-      <span className="drew-card-text">Card drawn</span>
+      <div className="drew-card-icon">+{count}</div>
+      <span className="drew-card-text">Card{count > 1 ? 's' : ''} drawn</span>
     </div>
   );
+}
+
+function AnimationManager() {
+  const { state, dispatch } = useGame();
+
+  useEffect(() => {
+    if (!state.activeAnimation && state.animationQueue.length > 0) {
+      dispatch({ type: "START_NEXT_ANIMATION" });
+    }
+  }, [state.activeAnimation, state.animationQueue, dispatch]);
+
+  const anim = state.activeAnimation;
+  if (!anim) return null;
+
+  if (anim.type === "YOUR_TURN") return <YourTurnIndicator />;
+  if (anim.type === "DREW_CARD") return <DrewCardIndicator count={anim.count || 1} />;
+  if (anim.type === "CARD_PLAYED") return <CardPlayedAnimation data={anim.data} />;
+
+  return null;
 }
 
 export default function GameScreen() {
@@ -143,9 +156,7 @@ export default function GameScreen() {
       </div>
 
       <Hand />
-      <YourTurnIndicator />
-      <DrewCardIndicator />
-      <CardPlayedAnimation />
+      <AnimationManager />
       <ColorPicker />
       <GameOverOverlay />
     </section>

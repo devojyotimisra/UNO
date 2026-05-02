@@ -25,10 +25,10 @@ const initialState = {
   loading: null,
   toasts: [],
   lastFine: null,
-  lastPlayedCard: null,
-  drewCard: false,
-  showYourTurn: false,
+  lastFine: null,
   prevTurnPlayer: null,
+  animationQueue: [],
+  activeAnimation: null,
 };
 
 function reducer(state, action) {
@@ -70,10 +70,9 @@ function reducer(state, action) {
         unoWindow: null,
         gameOver: null,
         lastFine: null,
-        lastPlayedCard: null,
-        drewCard: false,
-        showYourTurn: isMyStart,
         prevTurnPlayer: startPlayer,
+        animationQueue: isMyStart ? [{ type: "YOUR_TURN", id: Date.now() }] : [],
+        activeAnimation: null,
       };
     }
 
@@ -83,13 +82,17 @@ function reducer(state, action) {
       const isNowMyTurn = newCurrent === state.myId;
       const turnChanged = newCurrent !== state.prevTurnPlayer;
       const justBecameMyTurn = isNowMyTurn && !wasMyTurn && turnChanged;
+      const newQueue = [...state.animationQueue];
+      if (justBecameMyTurn) {
+        newQueue.push({ type: "YOUR_TURN", id: Date.now() + Math.random() });
+      }
       return {
         ...state,
         gameState: action.payload,
         selectedCardId:
           newCurrent !== state.myId ? null : state.selectedCardId,
         prevTurnPlayer: newCurrent,
-        showYourTurn: justBecameMyTurn ? true : state.showYourTurn,
+        animationQueue: newQueue,
       };
     }
 
@@ -100,17 +103,24 @@ function reducer(state, action) {
         selectedCardId: null,
       };
 
-    case "DREW_CARD":
-      return { ...state, drewCard: true };
+    case "QUEUE_ANIMATION":
+      return {
+        ...state,
+        animationQueue: [...state.animationQueue, action.payload],
+      };
 
-    case "CLEAR_DREW_CARD":
-      return { ...state, drewCard: false };
+    case "START_NEXT_ANIMATION":
+      return {
+        ...state,
+        activeAnimation: state.animationQueue[0] || null,
+        animationQueue: state.animationQueue.slice(1),
+      };
 
-    case "SHOW_YOUR_TURN":
-      return { ...state, showYourTurn: true };
-
-    case "CLEAR_YOUR_TURN":
-      return { ...state, showYourTurn: false };
+    case "CLEAR_ANIMATION":
+      return {
+        ...state,
+        activeAnimation: null,
+      };
 
     case "SELECT_CARD":
       return { ...state, selectedCardId: action.payload };
@@ -136,12 +146,6 @@ function reducer(state, action) {
 
     case "PLAYER_FINED":
       return { ...state, lastFine: action.payload };
-
-    case "CARD_PLAYED":
-      return { ...state, lastPlayedCard: action.payload };
-
-    case "CLEAR_PLAYED_CARD":
-      return { ...state, lastPlayedCard: null };
 
     case "CLEAR_FINE":
       return { ...state, lastFine: null };
@@ -178,10 +182,9 @@ function reducer(state, action) {
         unoWindow: null,
         gameOver: null,
         lastFine: null,
-        lastPlayedCard: null,
-        drewCard: false,
-        showYourTurn: false,
         prevTurnPlayer: null,
+        animationQueue: [],
+        activeAnimation: null,
         screen: "room",
         loading: null,
       };
@@ -256,8 +259,7 @@ export function GameProvider({ children }) {
       dispatch({ type: "HAND_UPDATED", payload: data });
       if (data.drawnCard) {
         const count = data.drawnCount || 1;
-        dispatch({ type: "DREW_CARD" });
-        setTimeout(() => dispatch({ type: "CLEAR_DREW_CARD" }), 1200);
+        dispatch({ type: "QUEUE_ANIMATION", payload: { type: "DREW_CARD", count, id: Date.now() + Math.random() } });
       }
     }
 
@@ -276,13 +278,15 @@ export function GameProvider({ children }) {
     }
 
     function onCardPlayed(data) {
-      dispatch({ type: "CARD_PLAYED", payload: data });
-      setTimeout(() => dispatch({ type: "CLEAR_PLAYED_CARD" }), 1400);
+      dispatch({ type: "QUEUE_ANIMATION", payload: { type: "CARD_PLAYED", data, id: Date.now() + Math.random() } });
     }
 
     function onPlayerFined(data) {
       dispatch({ type: "PLAYER_FINED", payload: data });
       const isMe = data.playerId === stateRef.current.myId;
+      if (isMe) {
+        dispatch({ type: "QUEUE_ANIMATION", payload: { type: "DREW_CARD", count: data.fineCount, id: Date.now() + Math.random() } });
+      }
       addToast(
         isMe
           ? `Invalid play! +${data.fineCount} cards`
@@ -295,6 +299,9 @@ export function GameProvider({ children }) {
 
     function onStackResolved(data) {
       const isMe = data.playerId === stateRef.current.myId;
+      if (isMe) {
+        dispatch({ type: "QUEUE_ANIMATION", payload: { type: "DREW_CARD", count: data.count, id: Date.now() + Math.random() } });
+      }
       addToast(
         isMe
           ? `You drew ${data.count} stacked cards!`

@@ -1,25 +1,33 @@
+import { useEffect } from "react";
 import { useGame } from "../context/GameContext";
 import UnoCard from "./UnoCard";
 import "./CardPlayedAnimation.css";
 
-export default function CardPlayedAnimation() {
-  const { state } = useGame();
-  const { lastPlayedCard, myId } = state;
+export default function CardPlayedAnimation({ data }) {
+  const { state, dispatch } = useGame();
+  const { myId } = state;
 
-  if (!lastPlayedCard) return null;
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      dispatch({ type: "CLEAR_ANIMATION" });
+    }, 1400);
+    return () => clearTimeout(timer);
+  }, [dispatch]);
 
-  const isMe = lastPlayedCard.playerId === myId;
-  const playerLabel = isMe ? "You" : lastPlayedCard.playerName;
+  if (!data) return null;
+
+  const isMe = data.playerId === myId;
+  const playerLabel = isMe ? "You" : data.playerName;
 
   return (
-    <div className="card-played-overlay" key={lastPlayedCard.card?.id || Date.now()}>
+    <div className="card-played-overlay" key={data.card?.id || Date.now()}>
       <div className="card-played-inner">
         <span className="card-played-label">{playerLabel} played</span>
         <div className="card-played-card-wrapper">
           <UnoCard
-            card={lastPlayedCard.card}
+            card={data.card}
             large
-            overrideColor={lastPlayedCard.chosenColor || null}
+            overrideColor={data.chosenColor || null}
           />
         </div>
       </div>
