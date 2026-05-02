@@ -1,0 +1,459 @@
+.uno-card {
+  --card-w: 80px;
+  --card-h: 120px;
+  width: var(--card-w);
+  min-width: var(--card-w);
+  height: var(--card-h);
+  border-radius: 12px;
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: 'Inter', sans-serif;
+  font-weight: 800;
+  color: #fff;
+  cursor: pointer;
+  user-select: none;
+  transition: transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1),
+    box-shadow 0.25s ease,
+    filter 0.2s ease;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3),
+    inset 0 1px 0 rgba(255, 255, 255, 0.15);
+  overflow: hidden;
+  border: 3px solid rgba(255, 255, 255, 0.15);
+  perspective: 800px;
+}
+
+.card-oval {
+  position: absolute;
+  width: 78%;
+  height: 82%;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.92);
+  transform: rotate(-15deg) scaleX(1.2);
+  box-shadow: 0 0 0 2px rgba(0, 0, 0, 0.08);
+  z-index: 0;
+}
+
+.uno-card.color-yellow .card-oval {
+  background: rgba(255, 255, 255, 0.88);
+}
+
+.uno-card.color-wild .card-oval {
+  background: rgba(0, 0, 0, 0.7);
+}
+
+.uno-card.color-red {
+  background: var(--card-red);
+  border-color: #c0303d;
+}
+
+.uno-card.color-green {
+  background: var(--card-green);
+  border-color: #1e7a6e;
+}
+
+.uno-card.color-blue {
+  background: var(--card-blue);
+  border-color: #3674c0;
+}
+
+.uno-card.color-yellow {
+  background: var(--card-yellow);
+  color: #1a1a2e;
+  border-color: #d4a832;
+}
+
+.uno-card.color-wild {
+  background: #1a1a2e;
+  border-color: #444;
+}
+
+.card-corner {
+  position: absolute;
+  font-size: 0.75rem;
+  font-weight: 800;
+  line-height: 1;
+  z-index: 2;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.15);
+}
+
+.card-corner.tl {
+  top: 6px;
+  left: 8px;
+}
+
+.card-corner.br {
+  bottom: 6px;
+  right: 8px;
+  transform: rotate(180deg);
+}
+
+.uno-card.color-yellow .card-corner {
+  color: #1a1a2e;
+  text-shadow: none;
+}
+
+.card-center {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.card-center-text {
+  font-size: 2rem;
+  font-weight: 900;
+  color: inherit;
+  line-height: 1;
+}
+
+.uno-card.color-red .card-center-text,
+.uno-card.color-green .card-center-text,
+.uno-card.color-blue .card-center-text {
+  color: inherit;
+}
+
+.uno-card.color-red .card-center {
+  color: var(--card-red);
+}
+
+.uno-card.color-green .card-center {
+  color: var(--card-green);
+}
+
+.uno-card.color-blue .card-center {
+  color: var(--card-blue);
+}
+
+.uno-card.color-yellow .card-center {
+  color: #c4960a;
+}
+
+.uno-card.color-wild .card-center {
+  color: #fff;
+}
+
+.wild-diamond {
+  width: 32px;
+  height: 32px;
+  transform: rotate(45deg);
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  grid-template-rows: 1fr 1fr;
+  border-radius: 4px;
+  overflow: hidden;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+}
+
+.wd-quarter {
+  width: 100%;
+  height: 100%;
+}
+
+.wd-red {
+  background: var(--card-red);
+}
+
+.wd-blue {
+  background: var(--card-blue);
+}
+
+.wd-green {
+  background: var(--card-green);
+}
+
+.wd-yellow {
+  background: var(--card-yellow);
+}
+
+.uno-card.valid-play {
+  cursor: pointer;
+}
+
+.uno-card.valid-play:hover {
+  transform: translateY(-10px) scale(1.06);
+  box-shadow: 0 16px 32px rgba(0, 0, 0, 0.35),
+    0 0 20px rgba(255, 255, 255, 0.1);
+  z-index: 10;
+}
+
+.uno-card.invalid-play {
+  cursor: pointer;
+  filter: brightness(0.7) saturate(0.6);
+}
+
+.uno-card.invalid-play:hover {
+  transform: translateY(-8px) scale(1.03);
+  filter: brightness(0.8) saturate(0.7);
+  box-shadow: 0 12px 24px rgba(0, 0, 0, 0.3);
+  z-index: 10;
+}
+
+.uno-card.selected {
+  transform: translateY(-20px) scale(1.1);
+  box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.95),
+    0 20px 40px rgba(0, 0, 0, 0.4),
+    0 0 30px rgba(255, 255, 255, 0.15);
+  z-index: 20;
+  filter: brightness(1.1) !important;
+}
+
+.uno-card.selected.invalid-play {
+  box-shadow: 0 0 0 3px rgba(255, 100, 100, 0.9),
+    0 20px 40px rgba(0, 0, 0, 0.4),
+    0 0 30px rgba(255, 50, 50, 0.2);
+}
+
+.uno-card.dealing {
+  animation: cardDeal 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) backwards;
+}
+
+@keyframes cardDeal {
+  0% {
+    opacity: 0;
+    transform: translateY(-80px) translateX(30px) scale(0.3) rotate(-30deg);
+  }
+
+  60% {
+    opacity: 1;
+    transform: translateY(-5px) translateX(-2px) scale(1.05) rotate(2deg);
+  }
+
+  100% {
+    opacity: 1;
+    transform: translateY(0) translateX(0) scale(1) rotate(0deg);
+  }
+}
+
+.discard-enter {
+  animation: discardFlip 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+@keyframes discardFlip {
+  0% {
+    transform: scale(0.4) rotate(-25deg) translateY(40px);
+    opacity: 0;
+  }
+
+  50% {
+    transform: scale(1.1) rotate(3deg) translateY(-5px);
+    opacity: 1;
+  }
+
+  100% {
+    transform: scale(1) rotate(0deg) translateY(0);
+    opacity: 1;
+  }
+}
+
+.uno-card.large {
+  --card-w: 100px;
+  --card-h: 150px;
+}
+
+.uno-card.large .card-center-text {
+  font-size: 2.8rem;
+}
+
+.uno-card.large .card-corner {
+  font-size: 0.95rem;
+}
+
+.uno-card.large .wild-diamond {
+  width: 44px;
+  height: 44px;
+}
+
+.uno-card-back {
+  --card-w: 80px;
+  --card-h: 120px;
+  width: var(--card-w);
+  min-width: var(--card-w);
+  height: var(--card-h);
+  border-radius: 12px;
+  background: #1a1a2e;
+  border: 3px solid #333;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  user-select: none;
+  transition: transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1),
+    box-shadow 0.25s ease;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+  position: relative;
+  overflow: hidden;
+}
+
+.uno-card-back.large {
+  --card-w: 100px;
+  --card-h: 150px;
+}
+
+.card-back-oval {
+  width: 70%;
+  height: 75%;
+  border-radius: 50%;
+  background: var(--card-red);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transform: rotate(-15deg) scaleX(1.2);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3),
+    inset 0 0 0 3px rgba(255, 255, 255, 0.2);
+}
+
+.card-back-logo {
+  font-size: 1.2rem;
+  font-weight: 900;
+  color: var(--card-yellow);
+  letter-spacing: -1px;
+  transform: rotate(15deg) scaleX(0.833);
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+}
+
+.uno-card-back.large .card-back-logo {
+  font-size: 1.6rem;
+}
+
+.uno-card-back:hover:not(.disabled) {
+  transform: scale(1.06);
+  box-shadow: 0 12px 28px rgba(233, 69, 96, 0.25);
+}
+
+.uno-card-back:active:not(.disabled) {
+  transform: scale(0.97);
+}
+
+.uno-card-back.disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.draw-pile-wrapper {
+  position: relative;
+  width: 80px;
+  height: 120px;
+}
+
+.draw-pile-stack {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  border-radius: 12px;
+  background: #151528;
+  border: 3px solid #2a2a40;
+}
+
+.draw-pile-stack.stack-3 {
+  top: -4px;
+  left: 4px;
+  opacity: 0.4;
+}
+
+.draw-pile-stack.stack-2 {
+  top: -2px;
+  left: 2px;
+  opacity: 0.6;
+}
+
+.draw-pile-stack.stack-1 {
+  top: 0;
+  left: 0;
+  opacity: 0.8;
+}
+
+.draw-pile-top {
+  position: absolute;
+  top: 2px;
+  left: -2px;
+}
+
+@media (max-width: 480px) {
+  .uno-card {
+    --card-w: 64px;
+    --card-h: 96px;
+  }
+
+  .card-center-text {
+    font-size: 1.6rem;
+  }
+
+  .card-corner {
+    font-size: 0.6rem;
+  }
+
+  .wild-diamond {
+    width: 24px;
+    height: 24px;
+  }
+
+  .uno-card.large {
+    --card-w: 84px;
+    --card-h: 126px;
+  }
+
+  .uno-card.large .card-center-text {
+    font-size: 2.2rem;
+  }
+
+  .uno-card.large .wild-diamond {
+    width: 36px;
+    height: 36px;
+  }
+
+  .uno-card-back {
+    --card-w: 64px;
+    --card-h: 96px;
+  }
+
+  .uno-card-back.large {
+    --card-w: 84px;
+    --card-h: 126px;
+  }
+
+  .card-back-logo {
+    font-size: 1rem;
+  }
+
+  .draw-pile-wrapper {
+    width: 64px;
+    height: 96px;
+  }
+}
+
+@media (min-width: 768px) {
+  .uno-card {
+    --card-w: 88px;
+    --card-h: 132px;
+  }
+
+  .card-center-text {
+    font-size: 2.4rem;
+  }
+
+  .card-corner {
+    font-size: 0.85rem;
+  }
+
+  .uno-card.large {
+    --card-w: 110px;
+    --card-h: 165px;
+  }
+
+  .uno-card.large .card-center-text {
+    font-size: 3.2rem;
+  }
+
+  .draw-pile-wrapper {
+    width: 88px;
+    height: 132px;
+  }
+
+  .uno-card-back {
+    --card-w: 88px;
+    --card-h: 132px;
+  }
+}

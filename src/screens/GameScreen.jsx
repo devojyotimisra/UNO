@@ -1,0 +1,97 @@
+import { useGame } from "../context/GameContext";
+import { currentColorCSS } from "../utils/cardHelpers";
+import socket from "../socket";
+import OpponentStrip from "../components/OpponentStrip";
+import UnoCard, { DrawPileCard } from "../components/UnoCard";
+import Hand from "../components/Hand";
+import { ColorPicker } from "../components/ColorPicker";
+import { GameOverOverlay } from "../components/GameOverOverlay";
+import Loader from "../components/Loader";
+import "./GameScreen.css";
+
+export default function GameScreen() {
+  const { state } = useGame();
+  const { gameState, myId, lastFine } = state;
+
+  if (!gameState) return <Loader fullscreen text="Loading game…" />;
+
+  const isMyTurn = gameState.currentPlayer === myId;
+  const myPlayer = gameState.players.find((p) => p.id === myId);
+
+  const handleDraw = () => {
+    if (!isMyTurn) return;
+    socket.emit("draw_card");
+  };
+
+  const topCard = gameState.topCard;
+  const overrideColor = !topCard.color ? gameState.currentColor : null;
+  const currentColor = gameState.currentColor;
+
+  return (
+    <section className={`game-screen ${isMyTurn ? "my-turn" : ""}`}>
+      <div className="game-turn-banner">
+        <div className="turn-left">
+          <div
+            className="turn-color-dot"
+            style={{ background: currentColorCSS(currentColor) }}
+          />
+          <span className="current-color-label">{currentColor}</span>
+        </div>
+
+        <span className={`turn-text ${isMyTurn ? "highlight" : ""}`}>
+          {isMyTurn ? "🎯 Your Turn!" : `${gameState.currentPlayerName}'s turn`}
+        </span>
+
+        <div className="turn-right">
+          <span
+            className="turn-direction"
+            title={
+              gameState.direction === 1 ? "Clockwise" : "Counter-clockwise"
+            }
+          >
+            {gameState.direction === 1 ? "↻" : "↺"}
+          </span>
+        </div>
+      </div>
+
+      <OpponentStrip />
+
+      <div className="game-table">
+        <div className="pile draw-pile-area">
+          <DrawPileCard
+            count={gameState.drawPileCount}
+            onClick={handleDraw}
+            disabled={!isMyTurn}
+          />
+          <div className="pile-info">
+            <span className="pile-label">Draw</span>
+            <span className="pile-count">{gameState.drawPileCount}</span>
+          </div>
+        </div>
+
+        <div className="table-direction">
+          <div
+            className={`direction-arrow ${gameState.direction === 1 ? "cw" : "ccw"}`}
+          >
+            {gameState.direction === 1 ? "→" : "←"}
+          </div>
+        </div>
+
+        <div className="pile discard-pile-area">
+          <div
+            className="discard-glow"
+            style={{ background: currentColorCSS(currentColor) }}
+          />
+          <UnoCard card={topCard} large overrideColor={overrideColor} discard />
+          <div className="pile-info">
+            <span className="pile-label">Discard</span>
+          </div>
+        </div>
+      </div>
+
+      <Hand />
+      <ColorPicker />
+      <GameOverOverlay />
+    </section>
+  );
+}

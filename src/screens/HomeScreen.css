@@ -1,0 +1,248 @@
+.home-screen {
+  min-height: 100dvh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  position: relative;
+  overflow: hidden;
+  background: radial-gradient(ellipse at center, rgba(30, 30, 50, 0.5) 0%, var(--bg-primary) 70%);
+}
+
+.home-bg {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  pointer-events: none;
+  z-index: 0;
+}
+
+.floating-card {
+  position: absolute;
+  border-radius: 10px;
+  opacity: 0.06;
+  animation: floatCard linear infinite;
+}
+
+@keyframes floatCard {
+  0% {
+    transform: translateY(110vh) rotate(0deg);
+    opacity: 0;
+  }
+
+  10% {
+    opacity: 0.06;
+  }
+
+  90% {
+    opacity: 0.06;
+  }
+
+  100% {
+    transform: translateY(-150px) rotate(360deg);
+    opacity: 0;
+  }
+}
+
+.ambient-particle {
+  position: absolute;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.15);
+  animation: particleFloat ease-in-out infinite alternate;
+}
+
+@keyframes particleFloat {
+  from {
+    transform: translateY(0) scale(1);
+    opacity: 0.15;
+  }
+
+  to {
+    transform: translateY(-30px) scale(1.5);
+    opacity: 0.05;
+  }
+}
+
+.home-logo-area {
+  text-align: center;
+  z-index: 1;
+  margin-bottom: 32px;
+}
+
+.home-logo {
+  font-size: 5rem;
+  font-weight: 900;
+  letter-spacing: -2px;
+  background: linear-gradient(135deg, var(--card-red), var(--card-yellow), var(--card-green), var(--card-blue));
+  background-size: 300% 300%;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  animation: logoShimmer 5s ease-in-out infinite;
+  margin-bottom: 6px;
+  filter: drop-shadow(0 4px 12px rgba(233, 69, 96, 0.15));
+}
+
+@keyframes logoShimmer {
+
+  0%,
+  100% {
+    background-position: 0% 50%;
+  }
+
+  50% {
+    background-position: 100% 50%;
+  }
+}
+
+.home-tagline {
+  font-size: 0.95rem;
+  color: var(--text-secondary);
+  text-align: center;
+  letter-spacing: 0.5px;
+}
+
+.home-card {
+  background: rgba(22, 22, 40, 0.7);
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 28px;
+  padding: 36px 32px;
+  width: 100%;
+  max-width: 420px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  z-index: 1;
+  box-shadow: 0 20px 80px rgba(0, 0, 0, 0.4),
+    0 0 0 1px rgba(255, 255, 255, 0.03),
+    inset 0 1px 0 rgba(255, 255, 255, 0.05);
+  animation: cardAppear 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) 0.2s backwards;
+}
+
+@keyframes cardAppear {
+  from {
+    opacity: 0;
+    transform: translateY(30px) scale(0.95);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.input-group {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.input-group label {
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.8px;
+}
+
+.room-code-input {
+  letter-spacing: 6px !important;
+  text-transform: uppercase !important;
+  font-size: 1.3rem !important;
+  text-align: center !important;
+  font-weight: 700 !important;
+}
+
+.home-divider {
+  text-align: center;
+  color: var(--text-muted);
+  font-size: 0.78rem;
+  font-weight: 500;
+  position: relative;
+  padding: 6px 0;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.home-divider::before,
+.home-divider::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.08), transparent);
+}
+
+.connection-dot {
+  position: fixed;
+  top: 16px;
+  right: 16px;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  z-index: 100;
+  transition: all 0.3s ease;
+}
+
+.connection-dot.connected {
+  background: var(--card-green);
+  box-shadow: 0 0 8px var(--card-green);
+}
+
+.connection-dot.disconnected {
+  background: var(--card-red);
+  box-shadow: 0 0 8px var(--card-red);
+  animation: pulse 1.5s ease-in-out infinite;
+}
+
+@keyframes pulse {
+
+  0%,
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+
+  50% {
+    opacity: 0.4;
+    transform: scale(0.8);
+  }
+}
+
+.home-footer {
+  position: fixed;
+  bottom: 16px;
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  z-index: 1;
+  opacity: 0.6;
+}
+
+@media (max-width: 480px) {
+  .home-logo {
+    font-size: 4rem;
+  }
+
+  .home-card {
+    padding: 28px 22px;
+    border-radius: 24px;
+  }
+
+  .room-code-input {
+    font-size: 1.1rem !important;
+    letter-spacing: 4px !important;
+  }
+}
+
+@media (min-width: 768px) {
+  .home-logo {
+    font-size: 6rem;
+  }
+
+  .home-card {
+    padding: 40px 36px;
+  }
+}
