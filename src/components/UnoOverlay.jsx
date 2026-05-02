@@ -15,7 +15,7 @@ export function UnoOverlay() {
       return;
     }
 
-    const totalMs = unoWindow.expiresIn;
+    const totalMs = unoWindow.expiresIn || 5000;
     const start = Date.now();
     const end = start + totalMs;
 

@@ -6,6 +6,7 @@ import OpponentStrip from "../components/OpponentStrip";
 import UnoCard, { DrawPileCard } from "../components/UnoCard";
 import Hand from "../components/Hand";
 import { ColorPicker } from "../components/ColorPicker";
+import { UnoOverlay } from "../components/UnoOverlay";
 import { GameOverOverlay } from "../components/GameOverOverlay";
 import CardPlayedAnimation from "../components/CardPlayedAnimation";
 import Loader from "../components/Loader";
@@ -158,6 +159,7 @@ export default function GameScreen() {
       <Hand />
       <AnimationManager />
       <ColorPicker />
+      <UnoOverlay />
       <GameOverOverlay />
     </section>
   );
