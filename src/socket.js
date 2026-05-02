@@ -31,7 +31,7 @@ socket.on('connect_error', (err) => {
 function handleVisibilityChange() {
   if (document.visibilityState === 'visible') {
     if (!socket.connected) {
-      console.log('[socket] app foregrounded — reconnecting');
+      console.log('[socket] app foregrounded - reconnecting');
       socket.connect();
     }
   }
@@ -40,13 +40,13 @@ function handleVisibilityChange() {
 document.addEventListener('visibilitychange', handleVisibilityChange);
 window.addEventListener('focus', () => {
   if (!socket.connected) {
-    console.log('[socket] window focused — reconnecting');
+    console.log('[socket] window focused - reconnecting');
     socket.connect();
   }
 });
 window.addEventListener('pageshow', (e) => {
   if (e.persisted && !socket.connected) {
-    console.log('[socket] pageshow (bfcache) — reconnecting');
+    console.log('[socket] pageshow (bfcache) - reconnecting');
     socket.connect();
   }
 });

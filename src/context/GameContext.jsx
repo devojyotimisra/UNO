@@ -8,12 +8,26 @@ import {
 } from "react";
 import socket from "../socket";
 
+const SESSION_KEY = "uno_session";
+
+function getInitialSession() {
+  try {
+    const session = JSON.parse(sessionStorage.getItem(SESSION_KEY));
+    if (session && session.roomCode) return session;
+  } catch {
+    // ignore
+  }
+  return null;
+}
+
+const initialSession = getInitialSession();
+
 const GameContext = createContext(null);
 
 const initialState = {
-  screen: "home",
-  myId: null,
-  room: null,
+  screen: initialSession ? "home" : "home",
+  myId: initialSession ? initialSession.myId : null,
+  room: initialSession ? { roomCode: initialSession.roomCode } : null,
   gameState: null,
   hand: [],
   selectedCardId: null,
@@ -34,7 +48,11 @@ const initialState = {
 function reducer(state, action) {
   switch (action.type) {
     case "SET_CONNECTED":
-      return { ...state, connected: action.payload };
+      return { 
+        ...state, 
+        connected: action.payload,
+        myId: action.myId || state.myId 
+      };
 
     case "SET_LOADING":
       return { ...state, loading: action.payload };
@@ -43,7 +61,18 @@ function reducer(state, action) {
       return { ...state, screen: action.payload };
 
     case "ROOM_CREATED":
-    case "ROOM_JOINED":
+    case "ROOM_JOINED": {
+      const myPlayer = action.payload.room.players?.find(
+        (p) => p.id === action.payload.playerId
+      );
+      sessionStorage.setItem(
+        SESSION_KEY,
+        JSON.stringify({
+          roomCode: action.payload.room.roomCode,
+          myId: action.payload.playerId,
+          name: myPlayer?.name || "Player",
+        })
+      );
       return {
         ...state,
         myId: action.payload.playerId,
@@ -51,6 +80,7 @@ function reducer(state, action) {
         screen: "room",
         loading: null,
       };
+    }
 
     case "ROOM_UPDATED":
       return { ...state, room: action.payload.room };
@@ -165,8 +195,12 @@ function reducer(state, action) {
       };
 
     case "RESET_TO_HOME":
+      sessionStorage.removeItem(SESSION_KEY);
       return {
         ...initialState,
+        screen: "home",
+        myId: null,
+        room: null,
         connected: state.connected,
         toasts: state.toasts,
       };
@@ -212,12 +246,15 @@ export function GameProvider({ children }) {
 
   useEffect(() => {
     function onConnect() {
-      dispatch({ type: "SET_CONNECTED", payload: true });
+      dispatch({ type: "SET_CONNECTED", payload: true, myId: socket.id });
       const s = stateRef.current;
       if (s.loading) {
         dispatch({ type: "SET_LOADING", payload: null });
       }
-      if (s.screen !== "home" && s.room) {
+      
+      const sessionStr = sessionStorage.getItem(SESSION_KEY);
+      
+      if (s.screen !== "home" && s.room && s.room.roomCode) {
         const myPlayer = s.room.players?.find((p) => p.id === s.myId);
         const myName = myPlayer?.name || "Player";
         socket.emit("rejoin_room", {
@@ -225,6 +262,17 @@ export function GameProvider({ children }) {
           name: myName,
         });
         addToast("Reconnected!", "success", 1500);
+      } else if (sessionStr && s.screen === "home") {
+        try {
+          const session = JSON.parse(sessionStr);
+          if (session.roomCode && session.name) {
+            dispatch({ type: "SET_LOADING", payload: "joining" });
+            socket.emit("rejoin_room", {
+              roomCode: session.roomCode,
+              name: session.name,
+            });
+          }
+        } catch (e) {}
       }
     }
 
