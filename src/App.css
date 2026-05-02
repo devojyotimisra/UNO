@@ -206,3 +206,17 @@ body {
     touch-action: manipulation;
   }
 }
+
+/* Force all animations on every device, regardless of OS accessibility settings */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: revert !important;
+    animation-delay: revert !important;
+    animation-iteration-count: revert !important;
+    transition-duration: revert !important;
+    transition-delay: revert !important;
+    scroll-behavior: auto !important;
+  }
+}
