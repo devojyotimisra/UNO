@@ -3,6 +3,11 @@
   padding: 8px 0 0;
   background: linear-gradient(180deg, transparent 0%, rgba(15, 14, 23, 0.8) 30%);
   position: relative;
+  z-index: 5;
+}
+
+.my-turn .hand-area {
+  z-index: 100;
 }
 
 .hand-label {
