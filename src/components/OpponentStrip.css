@@ -34,20 +34,7 @@
   transform: scale(1.03);
 }
 
-.opponent-chip.uno-risk {
-  animation: unoGlow 0.5s ease-in-out infinite alternate;
-  border-color: var(--card-yellow);
-}
 
-@keyframes unoGlow {
-  from {
-    box-shadow: 0 0 8px rgba(244, 197, 66, 0.3);
-  }
-
-  to {
-    box-shadow: 0 0 24px rgba(244, 197, 66, 0.6), 0 0 4px rgba(244, 197, 66, 0.8);
-  }
-}
 
 .turn-ring {
   position: absolute;
@@ -100,36 +87,7 @@
   line-height: 1;
 }
 
-.catch-btn-inline {
-  width: 32px;
-  height: 32px;
-  border-radius: 50%;
-  border: none;
-  background: rgba(244, 197, 66, 0.2);
-  cursor: pointer;
-  font-size: 1rem;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: all 0.2s ease;
-  animation: catchPulse 0.8s ease-in-out infinite alternate;
-  flex-shrink: 0;
-}
 
-.catch-btn-inline:hover {
-  background: rgba(244, 197, 66, 0.4);
-  transform: scale(1.15);
-}
-
-@keyframes catchPulse {
-  from {
-    box-shadow: 0 0 4px rgba(244, 197, 66, 0.3);
-  }
-
-  to {
-    box-shadow: 0 0 12px rgba(244, 197, 66, 0.6);
-  }
-}
 
 @media (max-width: 480px) {
   .opponents-strip {

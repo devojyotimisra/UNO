@@ -14,13 +14,11 @@ export default function OpponentStrip() {
     <div className="opponents-strip">
       {opponents.map((p) => {
         const isActive = p.id === gameState.currentPlayer;
-        const isRisk = unoWindow?.playerId === p.id;
         const bg = avatarColor(p.name);
-
         return (
           <div
             key={p.id}
-            className={`opponent-chip${isActive ? " active-turn" : ""}${isRisk ? " uno-risk" : ""}`}
+            className={`opponent-chip${isActive ? " active-turn" : ""}`}
           >
             {isActive && <div className="turn-ring" />}
 
@@ -34,18 +32,6 @@ export default function OpponentStrip() {
             <div className="opponent-info">
               <span className="opponent-name">{p.name}</span>
             </div>
-
-            {isRisk && p.id !== myId && (
-              <button
-                className="catch-btn-inline"
-                onClick={() =>
-                  socket.emit("catch_uno", { targetPlayerId: p.id })
-                }
-                title={`Catch ${p.name}!`}
-              >
-                🎯
-              </button>
-            )}
           </div>
         );
       })}
