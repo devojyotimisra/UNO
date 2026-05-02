@@ -55,7 +55,9 @@ function reducer(state, action) {
     case "ROOM_UPDATED":
       return { ...state, room: action.payload.room };
 
-    case "GAME_STARTED":
+    case "GAME_STARTED": {
+      const startPlayer = action.payload.gameState?.currentPlayer;
+      const isMyStart = startPlayer === state.myId;
       return {
         ...state,
         hand: action.payload.hand,
@@ -70,15 +72,17 @@ function reducer(state, action) {
         lastFine: null,
         lastPlayedCard: null,
         drewCard: false,
-        showYourTurn: false,
-        prevTurnPlayer: null,
+        showYourTurn: isMyStart,
+        prevTurnPlayer: startPlayer,
       };
+    }
 
     case "GAME_STATE": {
       const newCurrent = action.payload.currentPlayer;
       const wasMyTurn = state.prevTurnPlayer === state.myId;
       const isNowMyTurn = newCurrent === state.myId;
-      const justBecameMyTurn = isNowMyTurn && !wasMyTurn && state.prevTurnPlayer !== null;
+      const turnChanged = newCurrent !== state.prevTurnPlayer;
+      const justBecameMyTurn = isNowMyTurn && !wasMyTurn && turnChanged;
       return {
         ...state,
         gameState: action.payload,

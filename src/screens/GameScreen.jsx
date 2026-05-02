@@ -1,3 +1,4 @@
+import { useEffect } from "react";
 import { useGame } from "../context/GameContext";
 import { currentColorCSS } from "../utils/cardHelpers";
 import socket from "../socket";
@@ -12,14 +13,19 @@ import "./GameScreen.css";
 
 function YourTurnIndicator() {
   const { state, dispatch } = useGame();
+
+  useEffect(() => {
+    if (!state.showYourTurn) return;
+    const timer = setTimeout(() => {
+      dispatch({ type: "CLEAR_YOUR_TURN" });
+    }, 1600);
+    return () => clearTimeout(timer);
+  }, [state.showYourTurn, dispatch]);
+
   if (!state.showYourTurn) return null;
 
   return (
-    <div
-      className="your-turn-overlay"
-      key={Date.now()}
-      onAnimationEnd={() => dispatch({ type: "CLEAR_YOUR_TURN" })}
-    >
+    <div className="your-turn-overlay">
       <div className="your-turn-content">
         <div className="your-turn-line" />
         <span className="your-turn-text">YOUR TURN</span>
@@ -31,14 +37,19 @@ function YourTurnIndicator() {
 
 function DrewCardIndicator() {
   const { state, dispatch } = useGame();
+
+  useEffect(() => {
+    if (!state.drewCard) return;
+    const timer = setTimeout(() => {
+      dispatch({ type: "CLEAR_DREW_CARD" });
+    }, 1200);
+    return () => clearTimeout(timer);
+  }, [state.drewCard, dispatch]);
+
   if (!state.drewCard) return null;
 
   return (
-    <div
-      className="drew-card-flash"
-      key={Date.now()}
-      onAnimationEnd={() => dispatch({ type: "CLEAR_DREW_CARD" })}
-    >
+    <div className="drew-card-flash">
       <div className="drew-card-icon">+1</div>
       <span className="drew-card-text">Card drawn</span>
     </div>

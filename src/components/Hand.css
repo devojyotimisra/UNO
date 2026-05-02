@@ -199,11 +199,33 @@
 @media (min-width: 768px) {
   .hand-card-wrapper {
     margin-left: -10px;
+    transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1),
+      margin 0.2s ease;
+  }
+
+  .hand-card-wrapper:hover {
+    transform: rotate(0deg) translateY(-20px) !important;
+    z-index: 10;
+    margin-left: 4px;
+    margin-right: 4px;
+  }
+
+  .hand-card-wrapper.selected-wrapper {
+    transform: rotate(0deg) translateY(-32px) !important;
+    z-index: 20;
+    margin-left: 6px;
+    margin-right: 6px;
   }
 
   .play-btn {
     min-width: 260px;
     font-size: 1rem;
     padding: 16px 32px;
+    transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+  }
+
+  .play-btn:not(:disabled):hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 24px rgba(233, 69, 96, 0.3);
   }
 }
