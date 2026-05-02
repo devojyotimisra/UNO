@@ -18,13 +18,12 @@
   gap: 10px;
   padding: 8px 14px 8px 8px;
   border-radius: 40px;
-  background: rgba(30, 30, 50, 0.7);
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
+  background: rgba(30, 30, 50, 0.85);
   border: 1px solid rgba(255, 255, 255, 0.06);
-  transition: all 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
+  transition: all 0.2s ease;
   white-space: nowrap;
   position: relative;
+  -webkit-tap-highlight-color: transparent;
 }
 
 .opponent-chip.active-turn {
@@ -57,6 +56,7 @@
   border: 2px solid var(--accent);
   animation: turnRingPulse 1.5s ease-in-out infinite;
   pointer-events: none;
+  will-change: opacity;
 }
 
 @keyframes turnRingPulse {

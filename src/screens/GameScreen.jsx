@@ -6,6 +6,7 @@ import UnoCard, { DrawPileCard } from "../components/UnoCard";
 import Hand from "../components/Hand";
 import { ColorPicker } from "../components/ColorPicker";
 import { GameOverOverlay } from "../components/GameOverOverlay";
+import CardPlayedAnimation from "../components/CardPlayedAnimation";
 import Loader from "../components/Loader";
 import "./GameScreen.css";
 
@@ -90,6 +91,7 @@ export default function GameScreen() {
       </div>
 
       <Hand />
+      <CardPlayedAnimation />
       <ColorPicker />
       <GameOverOverlay />
     </section>

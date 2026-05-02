@@ -25,6 +25,7 @@ const initialState = {
   loading: null,
   toasts: [],
   lastFine: null,
+  lastPlayedCard: null,
 };
 
 function reducer(state, action) {
@@ -64,6 +65,7 @@ function reducer(state, action) {
         unoWindow: null,
         gameOver: null,
         lastFine: null,
+        lastPlayedCard: null,
       };
 
     case "GAME_STATE":
@@ -107,6 +109,12 @@ function reducer(state, action) {
 
     case "PLAYER_FINED":
       return { ...state, lastFine: action.payload };
+
+    case "CARD_PLAYED":
+      return { ...state, lastPlayedCard: action.payload };
+
+    case "CLEAR_PLAYED_CARD":
+      return { ...state, lastPlayedCard: null };
 
     case "CLEAR_FINE":
       return { ...state, lastFine: null };
@@ -164,7 +172,15 @@ export function GameProvider({ children }) {
   useEffect(() => {
     function onConnect() {
       dispatch({ type: "SET_CONNECTED", payload: true });
-      if (stateRef.current.screen !== "home") {
+      const s = stateRef.current;
+      if (s.screen !== "home" && s.room) {
+        // Attempt to rejoin after a reconnect (mobile background, etc.)
+        const myPlayer = s.room.players?.find((p) => p.id === s.myId);
+        const myName = myPlayer?.name || "Player";
+        socket.emit("rejoin_room", {
+          roomCode: s.room.roomCode,
+          name: myName,
+        });
         addToast("Reconnected!", "success", 2000);
       }
     }
@@ -212,6 +228,12 @@ export function GameProvider({ children }) {
       if (data.effect && labels[data.effect]) {
         addToast(labels[data.effect], "info", 2500);
       }
+    }
+
+    function onCardPlayed(data) {
+      dispatch({ type: "CARD_PLAYED", payload: data });
+      // Auto-clear after animation duration
+      setTimeout(() => dispatch({ type: "CLEAR_PLAYED_CARD" }), 1600);
     }
 
     function onPlayerFined(data) {
@@ -272,6 +294,7 @@ export function GameProvider({ children }) {
     socket.on("game_state", onGameState);
     socket.on("hand_updated", onHandUpdated);
     socket.on("card_effect", onCardEffect);
+    socket.on("card_played", onCardPlayed);
     socket.on("player_fined", onPlayerFined);
     socket.on("uno_window_open", onUnoWindowOpen);
     socket.on("uno_safe", onUnoSafe);
@@ -294,6 +317,7 @@ export function GameProvider({ children }) {
       socket.off("game_state", onGameState);
       socket.off("hand_updated", onHandUpdated);
       socket.off("card_effect", onCardEffect);
+      socket.off("card_played", onCardPlayed);
       socket.off("player_fined", onPlayerFined);
       socket.off("uno_window_open", onUnoWindowOpen);
       socket.off("uno_safe", onUnoSafe);
