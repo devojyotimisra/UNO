@@ -94,25 +94,21 @@ export default function Hand() {
           UNO!
         </button>
 
-        {hasDrawn ? (
+        {isMyTurn && hasDrawn ? (
           <button
             className="btn btn-pass"
             onClick={handlePass}
-            disabled={!isMyTurn}
           >
             Pass
           </button>
-        ) : (
-          drawStack > 0 && isMyTurn ? (
-            <button
-              className="btn btn-draw-stack"
-              onClick={handleDraw}
-              disabled={!isMyTurn}
-            >
-              Draw {drawStack}
-            </button>
-          ) : null
-        )}
+        ) : isMyTurn && drawStack > 0 ? (
+          <button
+            className="btn btn-draw-stack"
+            onClick={handleDraw}
+          >
+            Draw {drawStack}
+          </button>
+        ) : null}
 
         <button
           className="btn play-btn btn-primary"

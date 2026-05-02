@@ -199,15 +199,6 @@ body {
   border: 0;
 }
 
-@media (prefers-reduced-motion: reduce) {
-  *,
-  *::before,
-  *::after {
-    animation-duration: 0.01s !important;
-    animation-iteration-count: 1 !important;
-    transition-duration: 0.01s !important;
-  }
-}
 
 @media (max-width: 768px) {
   .btn {
